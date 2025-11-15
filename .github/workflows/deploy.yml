@@ -1,0 +1,43 @@
+name: Deploy to Github pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+
+      - run: rustup default nightly
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install
+        run: yarn
+
+      - name: Get emscripten SDK
+        run: wget https://github.com/emscripten-core/emsdk/archive/master.zip && unzip master.zip && ./emsdk-master/emsdk install latest && ./emsdk-master/emsdk activate latest
+
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
+      - name: Build
+        run: source emsdk-master/emsdk_env.sh && cargo install cargo-make && cargo make dist
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: app.daydream.im

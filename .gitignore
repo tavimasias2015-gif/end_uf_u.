@@ -1,0 +1,8 @@
+/target
+**/*.rs.bk
+pkg/
+dist/
+wasm-pack.log
+node_modules
+cypress/videos
+cypress/screenshots
